@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-4">Admin Panel</h1>
+        <hr>
+        <form id="questions-form">
+            <h4>Assessment Questions</h4>
+            <div id="question-wrapper">
+                <!-- Question inputs will be appended here -->
+            </div>
+            <button type="button" class="btn btn-primary mt-2" onclick="addQuestionInput()">Add Question</button>
+            <button type="submit" id="savebtn" class="btn btn-success mt-2">Save Questions</button>
+        </form>
+    </div>
+    <script>
+        let questions = [];
+
+        async function fetchQuestions() {
+        // Fetch the questions from the API
+        const url = '/get_questions';
+        const response = await fetch(url);
+        const data = await response.json();
+        questions = data.questions;
+        // Append input fields
+        for (const question of questions) {
+            addQuestionInput(question);
+        }
+    }
+
+
+        function deleteQuestionInput(inputWrapper) {
+    inputWrapper.remove();
+  }
+
+         function addQuestionInput(question = "") {
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "form-group";
+    inputWrapper.style.display = "flex";
+    inputWrapper.style.alignItems = "center";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = question;
+    input.className = "form-control";
+    input.placeholder = "Enter question";
+    input.style.flex = "1";
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-danger";
+    deleteButton.innerText = "Delete";
+    deleteButton.onclick = function () {
+      deleteQuestionInput(inputWrapper);
+    };
+    inputWrapper.appendChild(input);
+    inputWrapper.appendChild(deleteButton);
+    document.getElementById("question-wrapper").appendChild(inputWrapper);
+  }
+
+        document.getElementById('savebtn').onclick = async (e) => {
+            e.preventDefault();
+
+            // Get all the questions
+            const questionInputs = document.querySelectorAll('#question-wrapper input');
+            const newQuestions = Array.from(questionInputs).map(input => input.value);
+
+            // Update questions in the API
+            // Replace this url with your server url
+            const url = '/set_questions';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({questions: newQuestions})
+            });
+
+            const result = await response.json();
+        };
+
+        // Initialize the questions list
+        fetchQuestions();
+    </script>
+</body>
+</html>
